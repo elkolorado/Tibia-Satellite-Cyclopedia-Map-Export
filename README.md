@@ -1,8 +1,29 @@
 # Tibia Cyclopedia Map
 
-This script is used for processing satellite images in the Tibia game. It generates a map based on the images found in the specified directory.
+This script is used for processing satellite images in the Tibia game. It generates a satellite map view of each floor.
 
-## Usage
+Tibia uses `.bmp.lzma` files to store chunked satellite view in Cyclopedia Map.
+
+After skipping the first 32 bytes and modifying the header to set the uncompressed size to the maximum value, you can decompress the remaining data to obtain the original satellite view.
+
+```py
+# Read the compressed .bmp.lmza file into bytearray
+compressed_data = bytearray(file.read())
+
+# Skip the first 32 bytes
+compressed_data = compressed_data[32:]
+
+# Modify the header to set the uncompressed size to the maximum value
+for i in range(5, 13):
+    compressed_data[i] = 0xFF
+
+# Decompress the data
+decompressed_data = lzma.decompress(compressed_data)
+```
+
+The calculation for map size was done assuming the 512x512 original decompressed size.
+
+# Usage
 
 To use the script, follow these steps:
 
@@ -29,11 +50,17 @@ To use the script, follow these steps:
 
 To use the script, you can run it with the following command:
 
-4. Example
+# Examples
 
+Render all floors, into cwd directory
+   ```bash
+   python satellite.py
+   ```
+    
+Render just the floor 0 map, into `export` directory
    ```bash
    python satellite.py -d export -f 0
    ```
     
-   Will render just the floor 0 map, into export directory
+
        
