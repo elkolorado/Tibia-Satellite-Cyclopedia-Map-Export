@@ -1,5 +1,7 @@
 # Tibia Cyclopedia Map
 
+[Online Viewer](https://elkolorado.github.io/tibialibraries/cyclopediamap/)
+
 This script is used for processing satellite images in the Tibia game. It generates a satellite map view of each floor.
 
 Tibia uses `.bmp.lzma` files to store chunked satellite view in Cyclopedia Map.
