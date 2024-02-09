@@ -7,7 +7,7 @@ import sys
 import os
 import argparse
 
-def process_image(directory, image_width=512, image_height=512, output_file='map', floor=7, output_directory=None):
+def process_image(directory, image_width=512, image_height=512, output_file='map', floor=7, output_directory=None, lossless=False):
     """
     Process satellite images in a directory and create individual image tiles.
 
@@ -18,6 +18,7 @@ def process_image(directory, image_width=512, image_height=512, output_file='map
         output_file (str, optional): The name of the output file. Defaults to 'map'.
         floor (int, optional): The floor level of the satellite images. Defaults to 7.
         output_directory (str, optional): The directory to save the output files. Defaults to None.
+        lossless (bool, optional): Whether to save the images in lossless BMP format. Defaults to False.
     """
     # Initialize the minimum X and Y coordinates
     min_x = min_y = float('inf')
@@ -86,26 +87,28 @@ def process_image(directory, image_width=512, image_height=512, output_file='map
                 # Open the BMP image using PIL
                 bmp_image = Image.open(stream)
 
-                # Convert the BMP image to PNG format
-                png_image = bmp_image.convert('RGBA')
+                tile_filename = f'{output_file}_{floor}_{x}_{y}.bmp'
 
-                # Save the PNG image as an individual tile
-                tile_filename = f'{output_file}_{floor}_{x}_{y}.png'
+                if not lossless:
+                    # Convert the BMP image to PNG format
+                    bmp_image = bmp_image.convert('RGBA')
+                    tile_filename = f'{output_file}_{floor}_{x}_{y}.png'
+              
                 if output_directory is not None:
                     tile_path = os.path.join(output_directory, tile_filename)
                 else:
                     tile_path = tile_filename
-                png_image.save(tile_path)
+                bmp_image.save(tile_path)
 
-def requestMap(directory, output_file='map', floor=None, output_directory=None):
+def requestMap(directory, output_file='map', floor=None, output_directory=None, lossless=False):
     if floor is not None:
         print(f'Processing floor {floor}')
-        process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory)
+        process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory, lossless=lossless)
         print(f'Finished processing floor {floor} to {output_directory}')
     else:
         for floor in range(8):
             print(f'Processing floor {floor}')
-            process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory)
+            process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory, lossless=lossless )
             print(f'Finished processing floor {floor}')
 
 def parse_arguments():
@@ -118,6 +121,8 @@ def parse_arguments():
                         help='the floor number to process (default: all floors)')
     parser.add_argument('-d', '--output-directory', metavar='OUTPUT_DIRECTORY', type=str, default=None,
                         help='the directory to save the output files')
+    parser.add_argument('-l', '--lossless', action='store_true',
+                        help='save the images in lossless BMP format')
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -126,9 +131,11 @@ if __name__ == "__main__":
     output_file = args.output
     floor = args.floor
     output_directory = args.output_directory
+    lossless = args.lossless
+
 
     if directory is None:
         appdata_path = os.path.expandvars('%LOCALAPPDATA%')
         directory = os.path.join(appdata_path, 'Tibia', 'packages', 'Tibia', 'assets')
 
-    requestMap(directory, output_file=output_file, floor=floor, output_directory=output_directory)
+    requestMap(directory, output_file=output_file, floor=floor, output_directory=output_directory, lossless=lossless)

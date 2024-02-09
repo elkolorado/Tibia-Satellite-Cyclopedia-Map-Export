@@ -49,6 +49,8 @@ To use the script, follow these steps:
 - `-f FLOOR`, `--floor FLOOR`: The floor number to process. This is an optional parameter. If not provided, the script will process all floors.
 
 - `-d OUTPUT_DIRECTORY`, `--output-directory OUTPUT_DIRECTORY` The directory to save the output file. This is an optional parameter. If not provided, the script will use the current working directory.
+  
+- `-l`, `--loseless` This is optional paramter. If provided, the result will be saved as original .bmp file. By default the map is saved as compressed .png
 
 To use the script, you can run it with the following command:
 

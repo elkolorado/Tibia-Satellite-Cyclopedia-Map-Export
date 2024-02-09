@@ -7,7 +7,7 @@ import sys
 import os
 import argparse
 
-def process_image(directory, image_width=512, image_height=512, output_file='map', floor=7, output_directory=None):
+def process_image(directory, image_width=512, image_height=512, output_file='map', floor=7, output_directory=None, lossless=False):
     """
     Process satellite images in a directory and create a large composite image.
 
@@ -18,6 +18,7 @@ def process_image(directory, image_width=512, image_height=512, output_file='map
         output_file (str, optional): The name of the output file. Defaults to 'map'.
         floor (int, optional): The floor level of the satellite images. Defaults to 7.
         output_directory (str, optional): The directory to save the output file. Defaults to None.
+        lossless (bool, optional): Whether to save the images in lossless BMP format. Defaults to False.
     """
     # Initialize the minimum X and Y coordinates
     min_x = min_y = float('inf')
@@ -82,31 +83,36 @@ def process_image(directory, image_width=512, image_height=512, output_file='map
                 # Open the BMP image using PIL
                 bmp_image = Image.open(stream)
 
-                # Convert the BMP image to PNG format
-                png_image = bmp_image.convert('RGBA')
+                if not lossless:
+                    bmp_image = bmp_image.convert('RGBA')
 
-                # Paste the PNG image onto the large image at the correct position
-                large_image.paste(png_image, (x * image_width, y * image_height))
+                large_image.paste(bmp_image, (x * image_width, y * image_height))
 
     if output_directory is not None:
         if not os.path.isabs(output_directory):
             output_directory = os.path.join(os.getcwd(), output_directory)
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
-        output_path = os.path.join(output_directory, f'{output_file}{floor}.png')
+        if not lossless:
+            output_path = os.path.join(output_directory, f'{output_file}{floor}.png')
+        else:
+            output_path = os.path.join(output_directory, f'{output_file}{floor}.bmp')
     else:
-        output_path = f'{output_file}{floor}.png'
+        if not lossless:
+            output_path = f'{output_file}{floor}.png'
+        else:
+            output_path = f'{output_file}{floor}.bmp'
     large_image.save(output_path)
 
-def requestMap(directory, output_file='map', floor=None, output_directory=None):
+def requestMap(directory, output_file='map', floor=None, output_directory=None, lossless=False):
     if floor is not None:
         print(f'Processing floor {floor}')
-        process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory)
+        process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory, lossless=lossless)
         print(f'Finished processing floor {floor} to {output_directory}')
     else:
         for floor in range(8):
             print(f'Processing floor {floor}')
-            process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory)
+            process_image(directory, output_file=output_file, floor=floor, output_directory=output_directory, lossless=lossless)
             print(f'Finished processing floor {floor}')
 
 def parse_arguments():
@@ -120,6 +126,8 @@ def parse_arguments():
                         help='the floor number to process (default: all floors)')
     parser.add_argument('-d', '--output-directory', metavar='OUTPUT_DIRECTORY', type=str, default=None,
                         help='the directory to save the output file')
+    parser.add_argument('-l', '--lossless', action='store_true',
+                        help='save the images in lossless BMP format')
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -128,9 +136,10 @@ if __name__ == "__main__":
     output_file = args.output
     floor = args.floor
     output_directory = args.output_directory
+    lossless = args.lossless
 
     if directory is None:
         appdata_path = os.path.expandvars('%LOCALAPPDATA%')
         directory = os.path.join(appdata_path, 'Tibia', 'packages', 'Tibia', 'assets')
 
-    requestMap(directory, output_file=output_file, floor=floor, output_directory=output_directory)
+    requestMap(directory, output_file=output_file, floor=floor, output_directory=output_directory, lossless=lossless)
