@@ -40,4 +40,4 @@ def merge_images(directory):
     merged_image.save('utils/map_merged.png')
 
 # Merge the satellite images in the 'satellite_images' directory
-merge_images('tibia_13.33.14594')
+merge_images('tibia_15.10.77ba00')
